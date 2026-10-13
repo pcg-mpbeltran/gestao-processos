@@ -79,4 +79,3 @@ export function CentralApp() {
       <button onClick={() => { setRepository(undefined); setSession(undefined); setError('') }}>Desconectar</button>
     </section>} />
 }
-

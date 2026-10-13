@@ -44,4 +44,3 @@ export function Workspace({ tasks, currentUser, users, selectableUsers, selected
     </div>
   )
 }
-

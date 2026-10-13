@@ -135,4 +135,3 @@ export class CentralTaskRepository {
   }
   history(taskId: string) { return this.transport.history(taskId) }
 }
-

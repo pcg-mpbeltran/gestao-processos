@@ -20,4 +20,3 @@ export class HttpCentralTransport implements CentralTransport {
   execute(command: Command) { return this.request<VersionedTask>('/commands', command) }
   history(taskId: string) { return this.request<Audit[]>('/history?taskId=' + encodeURIComponent(taskId)) }
 }
-
