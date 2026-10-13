@@ -4,14 +4,6 @@ export interface SyncCache {
   load(): { records: VersionedTask[]; cursor: number; pending: Command[] } | null
   save(data: { records: VersionedTask[]; cursor: number; pending: Command[] }): void
 }
-export class SessionSyncCache implements SyncCache {
-  constructor(private key: string) {}
-  load() {
-    const raw = sessionStorage.getItem(this.key)
-    return raw ? JSON.parse(raw) : null
-  }
-  save(data: Parameters<SyncCache['save']>[0]) { sessionStorage.setItem(this.key, JSON.stringify(data)) }
-}
 export class CentralTaskRepository {
   records: VersionedTask[] = []
   pending: Command[] = []
