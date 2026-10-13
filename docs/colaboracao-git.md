@@ -2,18 +2,11 @@
 
 ## Estado preparado
 
-O projeto usa `main` como branch de integração e `feature/marco-0-fundacao` para esta entrega inicial. O remoto ainda precisa ser criado em uma organização ou conta definida pela equipe.
+O projeto usa `main` como branch de integração e `feature/marco-0-fundacao` para esta entrega inicial. O remoto oficial é `https://github.com/pcg-mpbeltran/gestao-processos`.
 
-## Publicar pela primeira vez
+## Começar a colaborar
 
-Depois de criar um repositório privado vazio no GitHub:
-
-```bash
-git remote add origin URL_DO_REPOSITORIO
-git push -u origin feature/marco-0-fundacao
-```
-
-Abra um Pull Request da branch de fundação para `main`. Depois da revisão e do merge, cada pessoa deve criar sua própria branch a partir de `main`.
+Depois de receber acesso ao repositório, cada pessoa deve cloná-lo e criar sua própria branch a partir de `main`.
 
 ## Divisão recomendada
 
