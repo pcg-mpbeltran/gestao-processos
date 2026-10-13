@@ -1,20 +1,15 @@
+import { Workspace } from './Workspace'
+import { CentralApp } from './CentralApp'
 import { useEffect, useMemo, useState } from 'react'
-import { Route, Routes } from 'react-router-dom'
-import { Sidebar } from './components/Sidebar'
-import { Topbar } from './components/Topbar'
 import { demoTasks, demoUsers } from './data/demo'
 import type { Task, TaskStatus } from './domain/task'
-import { HomePage } from './features/home/HomePage'
-import { PlaceholderPage } from './features/shared/PlaceholderPage'
-import { WorkPage } from './features/work/WorkPage'
 import { LocalStorageTaskRepository } from './infrastructure/taskRepository'
 
-function App() {
+function LocalApp() {
   const repository = useMemo(() => new LocalStorageTaskRepository('gestao-processos.tasks.v1'), [])
   const [tasks, setTasks] = useState<Task[]>([])
   const [ready, setReady] = useState(false)
   const [selectedUserId, setSelectedUserId] = useState(demoUsers[0].id)
-  const [sidebarOpen, setSidebarOpen] = useState(false)
   const currentUser = demoUsers.find((user) => user.id === selectedUserId) ?? demoUsers[0]
 
   useEffect(() => {
@@ -54,29 +49,12 @@ function App() {
 
   if (!ready) return <div className="app-loading">Preparando seu espaço de trabalho…</div>
 
-  return (
-    <div className="app-shell">
-      <Sidebar open={sidebarOpen} onToggle={() => setSidebarOpen((open) => !open)} />
-      <div className="main-shell">
-        <Topbar users={demoUsers} selectedUserId={selectedUserId} onUserChange={setSelectedUserId} />
-        <main>
-          <Routes>
-            <Route path="/" element={<HomePage currentUser={currentUser} tasks={tasks} />} />
-            <Route path="/meu-trabalho" element={<WorkPage currentUser={currentUser} users={demoUsers} tasks={tasks} onCreateTask={createTask} onStatusChange={updateStatus} />} />
-            <Route path="/equipe" element={<PlaceholderPage title="Equipe" description="Visão compartilhada de responsabilidades, capacidade e delegações." />} />
-            <Route path="/requisicoes" element={<PlaceholderPage title="Requisições" description="Solicitações que originam tarefas no mecanismo unificado." />} />
-            <Route path="/processos" element={<PlaceholderPage title="Processos" description="Catálogo hierárquico de macroprocessos, processos e atividades." />} />
-            <Route path="/cronogramas" element={<PlaceholderPage title="Cronogramas" description="Calendários, eventos, dependências e geração idempotente de tarefas." />} />
-            <Route path="/relacoes" element={<PlaceholderPage title="Relações" description="Mapa visual de dependências entre processos, tarefas, eventos e POs." />} />
-            <Route path="/pos" element={<PlaceholderPage title="Procedimentos operacionais" description="Tutoriais versionados, variantes e regras de aplicabilidade." />} />
-            <Route path="/substituicoes" element={<PlaceholderPage title="Substituições" description="Coberturas temporárias para férias e ausências." />} />
-            <Route path="/configuracoes" element={<PlaceholderPage title="Configurações" description="Perfis, permissões, status e preferências do sistema." />} />
-          </Routes>
-        </main>
-      </div>
-    </div>
-  )
+  return <Workspace tasks={tasks} currentUser={currentUser} users={demoUsers}
+    selectedUserId={selectedUserId} onUserChange={setSelectedUserId}
+    onCreateTask={createTask} onStatusChange={updateStatus} />
 }
 
-export default App
+export default function App() {
+  return import.meta.env.VITE_CENTRAL_SYNC === 'true' ? <CentralApp /> : <LocalApp />
+}
 
