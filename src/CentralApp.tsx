@@ -1,4 +1,5 @@
 import { DurableSyncCache } from './infrastructure/sync/durableSyncCache'
+import { SyncConflictNotice } from './SyncConflictNotice'
 import { SyncConflictDetails } from './SyncConflictDetails'
 import { useEffect, useState } from 'react'
 import type { Task, TaskStatus } from './domain/task'
@@ -45,8 +46,8 @@ export function CentralApp() {
     </main>
   )
   const user = session.user
-  function enqueue(action: () => void) {
-    try { action(); setError('') } catch (e) { setError(e instanceof Error ? e.message : 'Falha ao registrar alteração.') }
+  async function enqueue(action: () => Promise<void>) {
+    try { await action(); setError('') } catch (e) { setError(e instanceof Error ? e.message : 'Falha ao registrar alteração.') }
   }
   function createTask(input: Pick<Task, 'title' | 'assigneeId' | 'dueDate' | 'origin' | 'priority'>) {
     const now = new Date().toISOString()
@@ -68,14 +69,15 @@ export function CentralApp() {
     central selectedUserId={user.id} onUserChange={() => {}} selectableUsers={[user]}
     onCreateTask={createTask} onStatusChange={updateStatus}
     notice={<section className="panel sync-panel" aria-label="Sincronização">
+      <SyncConflictNotice active={repository.state === 'conflito'} />
       <p className="sync-status" role="status">Sincronização: {repository.state}. {repository.pending.length > 0 && repository.pending.length + ' alteração(ões) pendente(s).'} {repository.error}</p>
       {error && <p className="sync-error" role="alert">{error}</p>}
       {(repository.state === 'conflito' || repository.state === 'falha') && <div className="sync-conflict">
-        <h2>Revisar alteração</h2>
+        <h2 id="sync-conflict-title" tabIndex={-1}>Revisar alteração</h2>
         <p>Sua alteração permanece pendente. Revise antes de decidir.</p>
         <SyncConflictDetails command={repository.pending[0]} current={repository.conflict} users={session.users} />
-        <div className="sync-actions"><button className="secondary-button" onClick={() => void repository.discardPending()}>Descartar alteração pendente e recarregar</button>
-        {repository.conflict && <button className="primary-button" onClick={() => void repository.reapplyConflict()}>Reaplicar minha alteração sobre esta revisão</button>}
+        <div className="sync-actions"><button className="secondary-button" onClick={() => void enqueue(() => repository.discardPending())}>Descartar alteração pendente e recarregar</button>
+        {repository.conflict && <button className="primary-button" onClick={() => void enqueue(() => repository.reapplyConflict())}>Reaplicar minha alteração sobre esta revisão</button>}
         </div>
       </div>}
       <div className="sync-actions"><button className="secondary-button" onClick={() => void repository.sync()}>Sincronizar agora</button>

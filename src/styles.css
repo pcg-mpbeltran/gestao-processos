@@ -284,3 +284,6 @@ h2 { letter-spacing: -.02em; }
   .sync-actions { flex-direction: column; }
   .sync-actions button { width: 100%; }
 }
+
+.sync-conflict-notice { position: fixed; bottom: 20px; right: 20px; z-index: 1000; display: flex; align-items: center; flex-wrap: wrap; gap: 12px; width: min(460px, calc(100vw - 40px)); padding: 16px; border: 2px solid #9a6700; border-radius: 10px; background: #fffcf5; color: #583b00; box-shadow: 0 4px 20px #0003; }
+.sync-conflict-notice button:focus-visible, #sync-conflict-title:focus-visible { outline: 3px solid #2563eb; outline-offset: 3px; }
