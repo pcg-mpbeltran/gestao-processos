@@ -13,3 +13,7 @@ Thumbs.db
 .idea/
 .vscode/
 
+
+var/
+*.sqlite*
+*.credentials.json
