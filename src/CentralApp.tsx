@@ -1,9 +1,10 @@
+import { DurableSyncCache } from './infrastructure/sync/durableSyncCache'
 import { SyncConflictDetails } from './SyncConflictDetails'
 import { useEffect, useState } from 'react'
 import type { Task, TaskStatus } from './domain/task'
 import { Workspace } from './Workspace'
 import { HttpCentralTransport } from './infrastructure/sync/httpTransport'
-import { CentralTaskRepository, SessionSyncCache } from './infrastructure/sync/centralTaskRepository'
+import { CentralTaskRepository } from './infrastructure/sync/centralTaskRepository'
 import type { Session } from './infrastructure/sync/contract'
 
 export function CentralApp() {
@@ -25,7 +26,7 @@ export function CentralApp() {
     try {
       const transport = new HttpCentralTransport(token)
       const authenticated = await transport.session()
-      const repo = new CentralTaskRepository(transport, new SessionSyncCache('gestao-processos.sync.v1.' + authenticated.user.id))
+      const repo = new CentralTaskRepository(transport, new DurableSyncCache(authenticated.user.id))
       setSession(authenticated)
       setRepository(repo)
       setToken('')
@@ -39,7 +40,7 @@ export function CentralApp() {
         <label>Credencial de acesso<input type="password" autoComplete="off" required value={token} onChange={e => setToken(e.target.value)} /></label>
         <p>A credencial é fornecida pelo administrador e permanece somente na memória desta sessão.</p>
         <button className="primary-button" disabled={connecting}>Conectar</button>
-        {error && <p role="alert">{error}</p>}
+        {error && <p className="sync-error" role="alert">{error}</p>}
       </form>
     </main>
   )
@@ -64,18 +65,20 @@ export function CentralApp() {
     }))
   }
   return <Workspace tasks={repository.records.map(r => r.task)} currentUser={user} users={session.users}
-    selectedUserId={user.id} onUserChange={() => {}} selectableUsers={[user]}
+    central selectedUserId={user.id} onUserChange={() => {}} selectableUsers={[user]}
     onCreateTask={createTask} onStatusChange={updateStatus}
-    notice={<section className="panel" aria-label="Sincronização">
-      <p role="status">Sincronização: {repository.state}. {repository.pending.length > 0 && repository.pending.length + ' alteração(ões) pendente(s).'} {repository.error}</p>
-      {error && <p role="alert">{error}</p>}
-      {(repository.state === 'conflito' || repository.state === 'falha') && <>
+    notice={<section className="panel sync-panel" aria-label="Sincronização">
+      <p className="sync-status" role="status">Sincronização: {repository.state}. {repository.pending.length > 0 && repository.pending.length + ' alteração(ões) pendente(s).'} {repository.error}</p>
+      {error && <p className="sync-error" role="alert">{error}</p>}
+      {(repository.state === 'conflito' || repository.state === 'falha') && <div className="sync-conflict">
+        <h2>Revisar alteração</h2>
         <p>Sua alteração permanece pendente. Revise antes de decidir.</p>
         <SyncConflictDetails command={repository.pending[0]} current={repository.conflict} users={session.users} />
-        <button onClick={() => void repository.discardPending()}>Descartar alteração pendente e recarregar</button>
-        {repository.conflict && <button onClick={() => void repository.reapplyConflict()}>Reaplicar minha alteração sobre esta revisão</button>}
-      </>}
-      <button onClick={() => void repository.sync()}>Sincronizar agora</button>
-      <button onClick={() => { setRepository(undefined); setSession(undefined); setError('') }}>Desconectar</button>
+        <div className="sync-actions"><button className="secondary-button" onClick={() => void repository.discardPending()}>Descartar alteração pendente e recarregar</button>
+        {repository.conflict && <button className="primary-button" onClick={() => void repository.reapplyConflict()}>Reaplicar minha alteração sobre esta revisão</button>}
+        </div>
+      </div>}
+      <div className="sync-actions"><button className="secondary-button" onClick={() => void repository.sync()}>Sincronizar agora</button>
+      <button className="secondary-button" onClick={() => { setRepository(undefined); setSession(undefined); setError('') }}>Desconectar</button></div>
     </section>} />
 }

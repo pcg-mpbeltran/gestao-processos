@@ -68,11 +68,11 @@ faz parte desta entrega.
 3. B conclui a tarefa. A recebe a revisão atualizada.
 4. Faça duas edições sobre a mesma revisão: a segunda permanece em conflito.
 5. Pare a API, registre uma alteração e reinicie a API com o mesmo banco: a fila é
-   reenviada, sem duplicação. A fila também sobrevive à recarga da mesma aba.
+   reenviada, sem duplicação. A fila também sobrevive à recarga e ao fechamento do navegador normal (localStorage).
 6. Crie uma tarefa pessoal sem delegar: só o autor recebe seu conteúdo.
 7. Desconectar remove os dados da tela e a credencial da sessão ativa; cache/fila
-   permanecem na mesma aba, separados por identidade, para permitir recuperação.
-   Fechar a sessão do navegador pode apagar alterações ainda pendentes.
+   permanecem no dispositivo, separados por identidade, para permitir recuperação.
+   Entre novamente com a mesma identidade para recuperar a fila. Limpar dados do site ou encerrar navegação privada pode apagar pendências.
 
 ## API
 

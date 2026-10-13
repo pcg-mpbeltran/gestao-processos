@@ -258,3 +258,29 @@ h2 { letter-spacing: -.02em; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; }
 }
+
+/* Sincronização: acompanha a identidade visual existente. */
+.sync-panel { margin: 24px 38px 0; padding: 20px; font-size: .85rem; line-height: 1.5; }
+.sync-status { margin-bottom: 14px; font-weight: 700; overflow-wrap: anywhere; }
+.sync-error { padding: 12px; border-radius: 8px; color: #991b1b; background: #fff1f2; overflow-wrap: anywhere; }
+.sync-conflict { margin: 16px 0; padding: 16px; border: 1px solid #f0d9a9; border-radius: 10px; background: #fffcf5; }
+.sync-conflict h2 { margin-bottom: 8px; font-size: 1rem; }
+.sync-conflict > p { color: var(--muted); }
+.sync-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+.sync-actions button { max-width: 100%; height: auto; padding: 10px 14px; white-space: normal; text-align: center; }
+.sync-actions button:focus-visible { outline: 3px solid #2563eb; outline-offset: 3px; }
+.sync-comparison { display: grid; gap: 12px; }
+.sync-field { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px 12px; min-width: 0; }
+.sync-field > strong { grid-column: 1 / -1; }
+.sync-field p { margin: 0; padding: 12px; border: 1px solid var(--line); border-radius: 8px; white-space: pre-wrap; overflow-wrap: anywhere; background: white; }
+.sync-field p span { display: block; margin-bottom: 6px; color: var(--muted); font-size: .72rem; font-weight: 700; }
+.sync-field .sync-proposed { border-color: #cbdcf7; background: #f3f7ff; }
+.authenticated-user { cursor: default; }
+.central-chip { padding: 6px 9px; border: 1px solid #b9e0cf; border-radius: 999px; color: #126446; background: #effaf5; font-size: .64rem; font-weight: 750; white-space: nowrap; }
+@media (max-width: 1180px) { .central-chip { display: none; } }
+@media (max-width: 680px) {
+  .sync-panel { margin: 18px 17px 0; padding: 16px; }
+  .sync-field { grid-template-columns: minmax(0, 1fr); }
+  .sync-actions { flex-direction: column; }
+  .sync-actions button { width: 100%; }
+}

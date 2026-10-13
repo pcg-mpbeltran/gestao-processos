@@ -20,12 +20,12 @@ export function SyncConflictDetails({ command, current, users }: {
     if (field === 'assigneeId' || field === 'requesterId') return users.find(u => u.id === value)?.name ?? 'Pessoa indisponível'
     return Array.isArray(value) ? value.join(', ') || 'Nenhuma' : String(value)
   }
-  return <div>
+  return <div className="sync-comparison">
     {Object.entries(values).filter(([key]) => key in labels).map(([key, value]) =>
-      <div key={key}>
+      <div className="sync-field" key={key}>
         <strong>{labels[key]}</strong>
-        <p>Sua alteração: {format(key, value)}</p>
-        {current && key !== 'text' && <p>No servidor: {format(key, current.task[key as keyof Task])}</p>}
+        <p className="sync-proposed"><span>Sua alteração</span> {format(key, value)}</p>
+        {current && key !== 'text' && <p className="sync-current"><span>No servidor</span> {format(key, current.task[key as keyof Task])}</p>}
       </div>
     )}
   </div>

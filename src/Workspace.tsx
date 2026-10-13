@@ -9,6 +9,7 @@ import { PlaceholderPage } from './features/shared/PlaceholderPage'
 import { WorkPage } from './features/work/WorkPage'
 
 interface Props {
+  central?: boolean
   tasks: Task[]
   currentUser: User
   users: User[]
@@ -19,13 +20,13 @@ interface Props {
   onStatusChange: (id: string, status: TaskStatus) => void
   notice?: ReactNode
 }
-export function Workspace({ tasks, currentUser, users, selectableUsers, selectedUserId, onUserChange, onCreateTask, onStatusChange, notice }: Props) {
+export function Workspace({ central = false, tasks, currentUser, users, selectableUsers, selectedUserId, onUserChange, onCreateTask, onStatusChange, notice }: Props) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   return (
     <div className="app-shell">
-      <Sidebar open={sidebarOpen} onToggle={() => setSidebarOpen((open) => !open)} />
+      <Sidebar central={central} open={sidebarOpen} onToggle={() => setSidebarOpen((open) => !open)} />
       <div className="main-shell">
-        <Topbar users={selectableUsers ?? users} selectedUserId={selectedUserId} onUserChange={onUserChange} />
+        <Topbar central={central} users={selectableUsers ?? users} selectedUserId={selectedUserId} onUserChange={onUserChange} />
         <main>{notice}
           <Routes>
             <Route path="/" element={<HomePage currentUser={currentUser} tasks={tasks} />} />

@@ -22,8 +22,8 @@ Data: 13/10/2026. Estado: proposta implementada para revisão no Pull Request.
 - Polling de dois segundos implementa a assinatura do adaptador. Feed paginado de
   500 eventos, ordenado por cursor global. Snapshot e cursor são lidos na mesma
   transação. O cliente deduplica por revisão e cursor.
-- Cache e fila ficam em sessionStorage por identidade. Sobrevivem à recarga da mesma
-  aba, mas não ao fechamento definitivo da sessão. Tokens ficam apenas em memória;
+- Cache e fila agora ficam em localStorage por identidade (decisão 0004). Sobrevivem à recarga da mesma
+  aba e ao fechamento do navegador normal. Tokens ficam apenas em memória;
   a reconexão após recarga pede novamente a credencial. Outra conta não reutiliza
   a fila da anterior. Não há migração automática dos dados demonstrativos locais.
 - Tarefas pessoais sem delegação são privadas, mesmo se o cliente pedir visibilidade
