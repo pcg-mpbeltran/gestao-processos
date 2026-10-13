@@ -88,3 +88,18 @@ build de produção aprovados. Instalação concluída com auditoria npm sem vul
 - Decisão e limites do armazenamento durável em decisoes/0004-fila-duravel.md.
 
 Validação das correções: 50 testes aprovados; npm run lint e npm run build aprovados nos modos local e central. Inspeção visual desktop realizada; conferência móvel final interrompida pelo navegador.
+
+## Ajustes finais da revisão do PR #1 — 13/10/2026
+
+- Coordenação exclusiva por identidade via Web Locks em toda operação da fila, com
+  releitura do cache dentro do bloqueio. Duas abas preservam comandos distintos;
+  confirmações e resoluções antigas não removem comandos de outra aba.
+- HTTP 401/403 e demais 4xx preservados mesmo com corpo vazio, HTML ou JSON inválido.
+  Indisponibilidade recuperável restrita a falhas de rede, 5xx e sucesso 2xx inválido.
+- Aviso fixo acessível para conflitos; o foco e a rolagem só mudam por ação explícita.
+- 63 testes aprovados, incluindo concorrência entre instâncias, confirmação simultânea,
+  descarte antigo, ausência de Web Locks, classificação HTTP e preservação da digitação.
+- npm run lint e npm run build aprovados; build conferido nos modos local e central.
+- Task e TaskRepository compartilhados permanecem intactos. Sem merge ou deploy.
+- A verificação de acessibilidade desta rodada foi automatizada em DOM; não houve nova
+  inspeção visual manual no navegador.

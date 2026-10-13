@@ -101,3 +101,13 @@ real em loopback, concorrência em duas conexões, privacidade, histórico, pagi
 perda de resposta após commit e recuperação da fila.
 
 Veja docs/decisoes/0003-sincronizacao-central.md para decisões e limitações.
+
+## Abas e conflitos
+
+O modo central exige Web Locks (HTTPS ou localhost). Recarregue todas as abas ao atualizar
+para esta versão. Duas abas da mesma conta coordenam a fila: nenhuma grava a partir de
+um snapshot antigo. A fila só perde um comando após confirmação ou descarte explícito.
+Erros 401/403 preservam o status mesmo sem JSON e exigem revisão da credencial/permissão.
+
+Conflitos exibem aviso fixo com região de alerta acessível. O botão “Revisar conflito”
+leva o foco ao título do painel; o surgimento do aviso não muda foco nem rolagem.
