@@ -55,3 +55,51 @@ npm run lint
 npm run build
 ```
 
+
+## Entrega de sincronização — 13/10/2026
+
+Implementada na branch feature/sincronizacao-atividades, sujeita à revisão por PR:
+
+- API central Node/SQLite com autenticação por credenciais individuais.
+- Operações transacionais, revisão otimista, idempotência e auditoria.
+- Snapshot consistente, feed incremental paginado e assinatura por polling.
+- Cache/fila durável por usuário no dispositivo; recuperação após queda de conexão e reabertura.
+- Tarefas pessoais privadas e remoção do cache após revogação de acesso.
+- Integração opcional com a interface, estados de sincronização e resolução explícita de conflitos.
+- Task e TaskRepository originais preservados.
+- Sem merge, deploy ou publicação da aplicação.
+
+Decisões de armazenamento, autenticação provisória, política de conflitos e escopos
+iniciais estão documentadas em decisoes/0003-sincronizacao-central.md e precisam de
+revisão. Execução: sincronizacao-operacao.md. A escolha definitiva de SSO e a política
+operacional de backups/retenção continuam pendentes.
+
+Verificação desta entrega: 18 testes aprovados (3 existentes e 15 novos), lint e
+build de produção aprovados. Instalação concluída com auditoria npm sem vulnerabilidades.
+
+## Correções da revisão do PR #1 — 13/10/2026
+
+- Fila em localStorage versionado por identidade, com migração segura da sessão anterior.
+- Validação completa do cache e descarte automático de entradas inválidas.
+- Respostas vazias, não JSON ou fora do contrato mantêm comandos para nova tentativa.
+- Área de sincronização e comparação de conflitos formatada para desktop e celular.
+- Identidade autenticada sem simulação e texto de armazenamento adequado ao modo central.
+- Testes adicionais de persistência, migração, cache corrompido, respostas inválidas e interface.
+- Decisão e limites do armazenamento durável em decisoes/0004-fila-duravel.md.
+
+Validação das correções: 50 testes aprovados; npm run lint e npm run build aprovados nos modos local e central. Inspeção visual desktop realizada; conferência móvel final interrompida pelo navegador.
+
+## Ajustes finais da revisão do PR #1 — 13/10/2026
+
+- Coordenação exclusiva por identidade via Web Locks em toda operação da fila, com
+  releitura do cache dentro do bloqueio. Duas abas preservam comandos distintos;
+  confirmações e resoluções antigas não removem comandos de outra aba.
+- HTTP 401/403 e demais 4xx preservados mesmo com corpo vazio, HTML ou JSON inválido.
+  Indisponibilidade recuperável restrita a falhas de rede, 5xx e sucesso 2xx inválido.
+- Aviso fixo acessível para conflitos; o foco e a rolagem só mudam por ação explícita.
+- 63 testes aprovados, incluindo concorrência entre instâncias, confirmação simultânea,
+  descarte antigo, ausência de Web Locks, classificação HTTP e preservação da digitação.
+- npm run lint e npm run build aprovados; build conferido nos modos local e central.
+- Task e TaskRepository compartilhados permanecem intactos. Sem merge ou deploy.
+- A verificação de acessibilidade desta rodada foi automatizada em DOM; não houve nova
+  inspeção visual manual no navegador.

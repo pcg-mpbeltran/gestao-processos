@@ -34,11 +34,12 @@ const navItems: NavItem[] = [
 ]
 
 interface SidebarProps {
+  central?: boolean
   open: boolean
   onToggle: () => void
 }
 
-export function Sidebar({ open, onToggle }: SidebarProps) {
+export function Sidebar({ central = false, open, onToggle }: SidebarProps) {
   return (
     <>
       {open && <button className="sidebar-backdrop" aria-label="Fechar menu" onClick={onToggle} />}
@@ -84,8 +85,8 @@ export function Sidebar({ open, onToggle }: SidebarProps) {
           <div className="foundation-note">
             <span className="foundation-dot" />
             <div>
-              <strong>Versão de fundação</strong>
-              <small>Dados armazenados neste navegador</small>
+              <strong>{central ? 'Sincronização central' : 'Versão de fundação'}</strong>
+              <small>{central ? 'Dados no servidor · alterações pendentes salvas neste dispositivo' : 'Dados armazenados neste navegador'}</small>
             </div>
           </div>
         </div>
@@ -96,4 +97,3 @@ export function Sidebar({ open, onToggle }: SidebarProps) {
     </>
   )
 }
-

@@ -2,12 +2,13 @@ import { Bell, ChevronDown, Search } from 'lucide-react'
 import type { User } from '../domain/user'
 
 interface TopbarProps {
+  central?: boolean
   users: User[]
   selectedUserId: string
   onUserChange: (userId: string) => void
 }
 
-export function Topbar({ users, selectedUserId, onUserChange }: TopbarProps) {
+export function Topbar({ central = false, users, selectedUserId, onUserChange }: TopbarProps) {
   const currentUser = users.find((user) => user.id === selectedUserId) ?? users[0]
 
   return (
@@ -19,18 +20,18 @@ export function Topbar({ users, selectedUserId, onUserChange }: TopbarProps) {
       </label>
 
       <div className="topbar-actions">
-        <span className="simulation-chip">Ambiente demonstrativo</span>
+        <span className={central ? 'central-chip' : 'simulation-chip'}>{central ? 'Modo central' : 'Ambiente demonstrativo'}</span>
         <button className="icon-button notification-button" aria-label="Notificações">
           <Bell size={19} />
           <span />
         </button>
-        <label className="user-switcher">
+        <div className={central ? "user-switcher authenticated-user" : "user-switcher"} aria-label={central ? "Usuário autenticado" : undefined}>
           <span className="avatar">{currentUser.initials}</span>
           <span className="user-copy">
             <strong>{currentUser.name}</strong>
             <small>{currentUser.role}</small>
           </span>
-          <select
+          {!central && <><select
             aria-label="Simular usuário"
             value={selectedUserId}
             onChange={(event) => onUserChange(event.target.value)}
@@ -41,10 +42,9 @@ export function Topbar({ users, selectedUserId, onUserChange }: TopbarProps) {
               </option>
             ))}
           </select>
-          <ChevronDown size={16} aria-hidden="true" />
-        </label>
+          <ChevronDown size={16} aria-hidden="true" /></>}
+        </div>
       </div>
     </header>
   )
 }
-
