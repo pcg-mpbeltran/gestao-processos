@@ -44,3 +44,10 @@ Consulte `CONTRIBUTING.md` e `docs/colaboracao-git.md`. A sincronização de ati
 
 O repositório está atualmente em uma pasta sincronizada pelo OneDrive. Isso pode gerar arquivos duplicados e conflitos com o Git. Recomenda-se clonar o repositório remoto em `C:\Projetos\gestao-processos` antes de iniciar o trabalho simultâneo.
 
+
+## Sincronização central (opcional)
+
+A branch de sincronização acrescenta uma API SQLite, credenciais individuais,
+comandos idempotentes e revisão de conflitos. O modo local continua disponível.
+Consulte [execução e revisão](docs/sincronizacao-operacao.md) e
+[decisões e limitações](docs/decisoes/0003-sincronizacao-central.md).

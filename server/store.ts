@@ -1,5 +1,4 @@
 import { DatabaseSync } from 'node:sqlite'
-import { randomUUID } from 'node:crypto'
 import { commandSchema, SyncError, type Command, type VersionedTask, type Audit, type Delta } from '../src/infrastructure/sync/contract'
 import type { Task } from '../src/domain/task'
 import type { User } from '../src/domain/user'
@@ -19,14 +18,12 @@ function canRead(user: User, row: Stored) {
 
 export class CentralStore {
   private db: DatabaseSync
-  readonly instanceId: string
 
   constructor(path: string, private users: User[]) {
     this.db = new DatabaseSync(path)
     this.db.exec(`
       PRAGMA journal_mode = WAL;
       PRAGMA busy_timeout = 5000;
-      CREATE TABLE IF NOT EXISTS metadata (key TEXT PRIMARY KEY, value TEXT NOT NULL);
       CREATE TABLE IF NOT EXISTS tasks (id TEXT PRIMARY KEY, json TEXT NOT NULL);
       CREATE TABLE IF NOT EXISTS commands (
         actor TEXT NOT NULL, id TEXT NOT NULL, payload TEXT NOT NULL, result TEXT NOT NULL,
@@ -38,8 +35,6 @@ export class CentralStore {
       );
       CREATE INDEX IF NOT EXISTS events_task ON events(task_id, cursor);
     `)
-    this.db.prepare('INSERT OR IGNORE INTO metadata VALUES (?, ?)').run('instance', randomUUID())
-    this.instanceId = (this.db.prepare('SELECT value FROM metadata WHERE key = ?').get('instance') as { value: string }).value
   }
 
   close() { this.db.close() }

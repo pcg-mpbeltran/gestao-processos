@@ -1,3 +1,4 @@
+import { SyncConflictDetails } from './SyncConflictDetails'
 import { useEffect, useState } from 'react'
 import type { Task, TaskStatus } from './domain/task'
 import { Workspace } from './Workspace'
@@ -70,8 +71,7 @@ export function CentralApp() {
       {error && <p role="alert">{error}</p>}
       {(repository.state === 'conflito' || repository.state === 'falha') && <>
         <p>Sua alteração permanece pendente. Revise antes de decidir.</p>
-        <details><summary>Alteração pendente</summary><pre>{JSON.stringify(repository.pending[0], null, 2)}</pre></details>
-        {repository.conflict && <details><summary>Versão atual no servidor</summary><pre>{JSON.stringify(repository.conflict, null, 2)}</pre></details>}
+        <SyncConflictDetails command={repository.pending[0]} current={repository.conflict} users={session.users} />
         <button onClick={() => void repository.discardPending()}>Descartar alteração pendente e recarregar</button>
         {repository.conflict && <button onClick={() => void repository.reapplyConflict()}>Reaplicar minha alteração sobre esta revisão</button>}
       </>}
@@ -79,3 +79,4 @@ export function CentralApp() {
       <button onClick={() => { setRepository(undefined); setSession(undefined); setError('') }}>Desconectar</button>
     </section>} />
 }
+

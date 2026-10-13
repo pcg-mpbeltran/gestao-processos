@@ -55,3 +55,24 @@ npm run lint
 npm run build
 ```
 
+
+## Entrega de sincronização — 13/10/2026
+
+Implementada na branch feature/sincronizacao-atividades, sujeita à revisão por PR:
+
+- API central Node/SQLite com autenticação por credenciais individuais.
+- Operações transacionais, revisão otimista, idempotência e auditoria.
+- Snapshot consistente, feed incremental paginado e assinatura por polling.
+- Cache/fila por usuário na sessão do navegador; recuperação após queda de conexão.
+- Tarefas pessoais privadas e remoção do cache após revogação de acesso.
+- Integração opcional com a interface, estados de sincronização e resolução explícita de conflitos.
+- Task e TaskRepository originais preservados.
+- Sem merge, deploy ou publicação da aplicação.
+
+Decisões de armazenamento, autenticação provisória, política de conflitos e escopos
+iniciais estão documentadas em decisoes/0003-sincronizacao-central.md e precisam de
+revisão. Execução: sincronizacao-operacao.md. A escolha definitiva de SSO e a política
+operacional de backups/retenção continuam pendentes.
+
+Verificação desta entrega: 18 testes aprovados (3 existentes e 15 novos), lint e
+build de produção aprovados. Instalação concluída com auditoria npm sem vulnerabilidades.
