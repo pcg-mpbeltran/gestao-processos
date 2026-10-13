@@ -1,6 +1,7 @@
 import { SyncError, type CentralTransport, type Command, type VersionedTask, type SyncState } from './contract'
 
 export interface SyncCache {
+  exclusive?<T>(action: () => Promise<T>): Promise<T>
   load(): { records: VersionedTask[]; cursor: number; pending: Command[] } | null
   save(data: { records: VersionedTask[]; cursor: number; pending: Command[] }): void
 }
@@ -11,17 +12,35 @@ export class CentralTaskRepository {
   state: SyncState = 'alteração pendente'
   error = ''
   conflict?: VersionedTask
-  private busy = false
+  private operation: Promise<unknown> = Promise.resolve()
+  private syncQueued?: Promise<void>
   private initialized = false
   private listeners = new Set<() => void>()
   private timer?: ReturnType<typeof setInterval>
   constructor(private transport: CentralTransport, private cache: SyncCache) {
-    const cached = cache.load()
+    // O cache compartilhado só é lido/migrado dentro do bloqueio entre abas.
+    if (!cache.exclusive) this.restore()
+  }
+  private restore() {
+    const previous = this.pending[0]?.commandId
+    const cached = this.cache.load()
     if (cached) {
       this.records = cached.records
       this.pending = cached.pending
       this.cursor = cached.cursor
+    } else {
+      this.records = []; this.pending = []; this.cursor = 0; this.initialized = false
     }
+    if (previous !== this.pending[0]?.commandId) {
+      this.conflict = undefined; this.error = ''; this.state = 'alteração pendente'
+    }
+  }
+  private run<T>(action: () => Promise<T>): Promise<T> {
+    const work = this.operation.then(() => this.cache.exclusive
+      ? this.cache.exclusive(async () => { this.restore(); return action() })
+      : action())
+    this.operation = work.catch(() => {})
+    return work
   }
   subscribe(listener: () => void) {
     this.listeners.add(listener)
@@ -36,24 +55,33 @@ export class CentralTaskRepository {
     if (existing && existing.revision >= record.revision) return
     this.records = [...this.records.filter(r => r.task.id !== record.task.id), record]
   }
-  enqueue(command: Command) {
-    // Uma operação pendente por atividade evita editar uma revisão ainda não confirmada.
-    const id = command.kind === 'create' ? command.task.id : command.taskId
-    if (this.pending.some(c => (c.kind === 'create' ? c.task.id : c.taskId) === id)) {
-      throw new Error('Esta atividade já possui uma alteração pendente.')
-    }
-    this.pending = [...this.pending, command]
-    try { this.persist() } catch (error) {
-      this.pending = this.pending.filter(c => c !== command)
-      throw error
-    }
-    this.state = 'alteração pendente'
-    this.emit()
+  async enqueue(command: Command) {
+    await this.run(async () => {
+      // Uma operação pendente por atividade evita editar uma revisão ainda não confirmada.
+      const id = command.kind === 'create' ? command.task.id : command.taskId
+      if (this.pending.some(c => (c.kind === 'create' ? c.task.id : c.taskId) === id)) {
+        throw new Error('Esta atividade já possui uma alteração pendente.')
+      }
+      this.pending = [...this.pending, command]
+      try { this.persist() } catch (error) {
+        this.pending = this.pending.filter(c => c !== command)
+        throw error
+      }
+      if (this.state !== 'conflito' && this.state !== 'falha') this.state = 'alteração pendente'
+      this.emit()
+    })
     void this.sync()
   }
-  async sync() {
-    if (this.busy) return
-    this.busy = true
+  sync(): Promise<void> {
+    if (this.syncQueued) return this.syncQueued
+    this.syncQueued = this.run(() => this.syncLocked()).catch(error => {
+      this.state = 'falha'
+      this.error = error instanceof Error ? error.message : 'Falha ao coordenar a sincronização.'
+      this.emit()
+    }).finally(() => { this.syncQueued = undefined })
+    return this.syncQueued
+  }
+  private async syncLocked() {
     const blocked = this.state === 'conflito' || this.state === 'falha'
     this.state = blocked ? this.state : 'salvando'
     this.emit()
@@ -99,25 +127,35 @@ export class CentralTaskRepository {
         this.state = 'sem conexão'
         this.error = 'As alterações pendentes serão reenviadas ao reconectar.'
       }
-    } finally { this.busy = false; this.emit() }
+    } finally { this.emit() }
   }
   // Nenhuma rebase automática: a pessoa deve revisar a versão central e descartar ou reaplicar.
   async discardPending() {
-    if (this.busy) return
-    this.pending.shift()
-    this.conflict = undefined
-    this.state = 'alteração pendente'
-    this.initialized = false
-    this.persist()
+    const expected = this.pending[0]?.commandId
+    await this.run(async () => {
+      // Uma resolução feita em outra aba nunca descarta o próximo comando por engano.
+      if (!expected || this.pending[0]?.commandId !== expected) return
+      const previous = this.pending
+      this.pending = this.pending.slice(1)
+      try { this.persist() } catch (error) { this.pending = previous; throw error }
+      this.conflict = undefined
+      this.state = 'alteração pendente'
+      this.initialized = false
+    })
     await this.sync()
   }
   async reapplyConflict() {
-    const command = this.pending[0]
-    if (this.busy || !this.conflict || !command || command.kind === 'create') return
-    this.pending[0] = { ...command, commandId: crypto.randomUUID(), revision: this.conflict.revision }
-    this.conflict = undefined
-    this.state = 'alteração pendente'
-    this.persist()
+    const expected = this.pending[0]?.commandId
+    const revision = this.conflict?.revision
+    await this.run(async () => {
+      const command = this.pending[0]
+      if (!revision || !command || command.commandId !== expected || command.kind === 'create') return
+      const previous = this.pending
+      this.pending = [{ ...command, commandId: crypto.randomUUID(), revision }, ...this.pending.slice(1)]
+      try { this.persist() } catch (error) { this.pending = previous; throw error }
+      this.conflict = undefined
+      this.state = 'alteração pendente'
+    })
     await this.sync()
   }
   start() {

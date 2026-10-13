@@ -31,6 +31,12 @@ export class DurableSyncCache implements SyncCache {
     this.key = 'gestao-processos.sync.v2.' + userId
     this.legacyKey = 'gestao-processos.sync.v1.' + userId
   }
+  async exclusive<T>(action: () => Promise<T>): Promise<T> {
+    if (!navigator.locks) {
+      throw new Error('Este navegador não oferece coordenação segura entre abas. Use um navegador atualizado em HTTPS ou localhost.')
+    }
+    return navigator.locks.request(this.key, { mode: 'exclusive' }, action)
+  }
   load(): ReturnType<SyncCache['load']> {
     const raw = this.storage.getItem(this.key)
     if (raw !== null) {

@@ -18,11 +18,14 @@ export class HttpCentralTransport implements CentralTransport {
     } catch {
       // O servidor pode ter confirmado o comando antes de o proxy perder a resposta.
       // Repetir com a mesma chave é seguro; retirar da fila neste ponto não seria.
-      throw new SyncError(503, 'Resposta do servidor indisponível. Tentaremos novamente.')
+      throw new SyncError(response.ok ? 503 : response.status,
+        response.ok || response.status >= 500
+          ? 'Resposta do servidor indisponível. Tentaremos novamente.'
+          : 'Solicitação recusada pelo servidor (HTTP ' + response.status + ').')
     }
     if (!response.ok) {
       const parsed = errorSchema.safeParse(result)
-      if (!parsed.success) throw new SyncError(503, 'Resposta inválida do servidor. Tentaremos novamente.')
+      if (!parsed.success) throw new SyncError(response.status, 'Solicitação recusada pelo servidor (HTTP ' + response.status + ').')
       throw new SyncError(response.status, parsed.data.message, parsed.data.current)
     }
     const parsed = schema.safeParse(result)
